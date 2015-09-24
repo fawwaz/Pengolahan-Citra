@@ -135,6 +135,34 @@ public class MyGrayScale {
 		return kStar;
 	}
 	
+	public boolean isDominantWhite(BufferedImage image){
+		int whitecounter=0,blackcounter=0;
+		for (int i = 0; i < image.getHeight(); i++) {
+			for (int j = 0; j < image.getWidth(); j++) {
+				Color c = new Color(image.getRGB(j, i));
+				if(c.getRed()<128){
+					blackcounter++;
+				}else if(c.getRed()>=128){
+					whitecounter++;
+				}
+			}
+		}
+		System.out.println("white Score "+whitecounter + " Black Score "+blackcounter);
+		return whitecounter>blackcounter;
+	}
+	
+	public BufferedImage invertGrayScale(BufferedImage image){
+		BufferedImage retimg = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+		for (int i = 0; i < image.getHeight(); i++) {
+			for (int j = 0; j < image.getWidth(); j++) {
+				Color c = new Color(image.getRGB(j, i));
+				int new_color = 255 - c.getRed();
+				Color new_c = new Color(new_color,new_color,new_color);
+				retimg.setRGB(j, i, new_c.getRGB());
+			}
+		}
+		return retimg;
+	}
 	
 	private int getintfromRGB(int red,int green, int blue){
 		

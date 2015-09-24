@@ -6,24 +6,25 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class MyEqualizer {
+import myutilities.MyNormalizer.myshortcomparator;
 
-	public TreeMap<Short, Integer> oldred = new TreeMap<>(new myshortcomparator()),oldgreen = new TreeMap<>(new myshortcomparator()),oldblue = new TreeMap<>(new myshortcomparator());
-	public TreeMap<Short, Short> redlut = new TreeMap<>(new myshortcomparator()),greenlut = new TreeMap<>(new myshortcomparator()),bluelut = new TreeMap<>(new myshortcomparator());	
+public class MyEqualizer {
 	
+	public TreeMap<Short, Integer> oldred = new TreeMap<>(new myshortcomparator()),oldgreen = new TreeMap<>(new myshortcomparator()),oldblue = new TreeMap<>(new myshortcomparator());
+	public TreeMap<Short, Short> redlut = new TreeMap<>(new myshortcomparator()),greenlut = new TreeMap<>(new myshortcomparator()),bluelut = new TreeMap<>(new myshortcomparator());
 	
 	public BufferedImage equalize(){
-		BufferedImage retimage = new BufferedImage(MyUtil.width, MyUtil.height, BufferedImage.TYPE_INT_RGB);
-		// 1. Baca histogram
+		BufferedImage retval = new BufferedImage(MyUtil.width, MyUtil.height, BufferedImage.TYPE_INT_RGB);
+		// 1. Read Histogram
 		ReadHistogram();
-		// 2. Hitung LUT
+		// 2. Stretch Histogram
 		CalculateLut();
-		// 3. Tulis image
-		retimage = WriteImage();
-		return retimage;
+		// 3. Write Histogram
+		retval = WriteImage();
+		return retval;
 	}
 	
-
+	
 	/**
 	 * Private functions
 	 * */
@@ -45,10 +46,8 @@ public class MyEqualizer {
 	private void CalculateLut(){
 		StretchHistogram(oldred, redlut);
 		StretchHistogram(oldgreen, greenlut);
-		StretchHistogram(oldblue, bluelut);		
+		StretchHistogram(oldblue, bluelut);
 	}
-	
-	
 	
 	private BufferedImage WriteImage(){
 		BufferedImage retimage = new BufferedImage(MyUtil.width, MyUtil.height, BufferedImage.TYPE_INT_ARGB);
@@ -82,27 +81,20 @@ public class MyEqualizer {
 		oldhistogram.put(key, a+1);
 	}
 	
-	
-	public void StretchHistogram(TreeMap<Short, Integer> oldhistogram, TreeMap<Short, Short> lut){
-		TreeMap<Short, Integer> tabelkumulatif = new TreeMap<>(new myshortcomparator());
-		Integer tempcumulative = 0;
-		
+	private void StretchHistogram(TreeMap<Short, Integer> oldhistogram, TreeMap<Short, Short> lut){
+		float first_color = oldhistogram.firstKey();
+		float last_color = oldhistogram.lastKey();
+		float range_color = last_color - first_color;
+		System.out.println("First Color" + first_color + " Last Color " + last_color + " Range " + range_color);
+		// Iterate over color
 		for (Map.Entry<Short, Integer> entry : oldhistogram.entrySet()) {
-			Short kodewarna = entry.getKey();
-			tempcumulative = tempcumulative + entry.getValue();
-			tabelkumulatif.put(kodewarna,tempcumulative);
-		}
-		
-		for (Map.Entry<Short, Integer> entry : tabelkumulatif.entrySet()){
-			float delta_atas = (float) (entry.getValue() - tabelkumulatif.get(tabelkumulatif.firstKey()));
-			float delta_bawah = (float) (tabelkumulatif.get(tabelkumulatif.lastKey()) - tabelkumulatif.get(tabelkumulatif.firstKey()));
-			//Short warnabaru = (short) (Math.round(delta_atas /delta_bawah * tabelkumulatif.lastKey()) + tabelkumulatif.firstKey());
-			Short warnabaru = (short) Math.round(delta_atas /delta_bawah * 255) ;
-			// System.out.println("atas" +delta_atas +" bawah "+delta_bawah+ " hasil : " + warnabaru);
-			//System.out.println("atas :"+entry.getValue()+" bawah :" + tabelkumulatif.get(tabelkumulatif.lastKey()) + "hasil bagi :" + entry.getValue() * tabelkumulatif.get(tabelkumulatif.lastKey()));
+			short color_i = entry.getKey();
+			Short warnabaru = (short) Math.round(((color_i - first_color) / range_color)*255);
 			lut.put(entry.getKey(), warnabaru);
+			System.out.println("Old color : "+ entry.getKey() + " New Color " + warnabaru);
 		}
 	}
+	
 	
 	private int getintfromRGB(int red,int green, int blue){
 		

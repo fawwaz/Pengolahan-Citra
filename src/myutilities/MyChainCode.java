@@ -1,19 +1,24 @@
 package myutilities;
 
+import myutilities.helper.*;
+
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import weka.classifiers.misc.SerializedClassifier;
+import weka.classifiers.trees.J48;
 
 import myutilities.helper.*;
 
 public class MyChainCode {
 	
 	public BufferedImage image;
-//	public BufferedImage retimage = new BufferedImage(MyUtil.width, MyUtil.height, BufferedImage.TYPE_INT_RGB);
 	public ArrayList<Gambar> gambars = new ArrayList<Gambar>();	
 //	public String[][] jalur;
 	public int w, h;
@@ -39,6 +44,37 @@ public class MyChainCode {
 		}
 	}
 	
+	public String getChainCodeInfo(){
+		String retval = "";
+		
+		makeChainCode();
+		retval = getInfos();
+	
+		return retval;
+	}
+	
+	public ArrayList<Gambar> getGambars(){
+		makeChainCode();
+		return gambars;
+	}
+	
+	public String RecognizeNumber(){
+		String retval = "";
+		double[][] the_gambars = new double[gambars.size()][81]; 
+		
+		Learner learner = new Learner();
+		for (int i = 0; i < gambars.size(); i++) {
+			learner.CalculatePercentage(gambars.get(i));
+			the_gambars[i] = learner.properties;
+		}
+		SerializedClassifier classifier = new SerializedClassifier();
+		classifier.setModelFile(new File("output.model"));
+		
+		//classifier.classifyInstance(arg0)
+		
+		return retval;
+	}
+	
 	public void SetInputImage(BufferedImage image){
 		gambars.clear();
 		w = image.getWidth();
@@ -55,10 +91,6 @@ public class MyChainCode {
 		return gambars;
 	}
 	
-	public String GenerateChainCode(){
-		String retval="";
-		return retval;
-	}
 	
 	
 	/**
@@ -130,5 +162,62 @@ public class MyChainCode {
 	private int RGBtointpixel(int r, int g, int b) {
 		return ((r & 0x0ff) << 16) | ((g & 0x0ff) << 8) | (b & 0x0ff);
 	}
+	
+	private void makeChainCode(){
+		for (int i = 0; i < gambars.size(); i++) {
+			generateChainCode(gambars.get(i));
+		}
+	}
+	
+	private void generateChainCode(Gambar g){
+		int curx = g.startx;
+		int cury = g.starty;
+		int blackcode = 0, wx,wy,bx,by;
+		int whitecode = blackcode + 1;
+		int curcode = 0, prevcode = 0; // default ke kanan
+		
+		do{
+			
+			for (int i = 0; i < 8; i++) {
+				blackcode = (prevcode + i    ) % 8;
+				whitecode = (prevcode + i + 1) % 8;
+				
+				// Konversi code ke koordinat
+				wx = curx + dx_chain[whitecode];
+				wy = cury + dy_chain[whitecode];
+				bx = curx + dx_chain[blackcode];
+				by = cury + dy_chain[blackcode];
+				//System.out.println("Cur: " +curx + " " + cury + " W :" + wx +" "+ wy + " B :" + bx +" "+ by +" White ?: " + iswhite(wx, wy) + " Black ? :"+ isblack(bx, by));
+				//print_w_b(wx, wy, bx, by);
+				
+				Color c = new Color(image.getRGB(wx, wy));
+				//System.out.println("white"+c.getRed());
+				
+				if(iswhite(wx, wy)&&isblack(bx, by)){
+					System.out.print(blackcode);
+					g.chaincode = g.chaincode + blackcode;
+					curx = bx;
+					cury = by;
+										
+					//jalur[by][bx] = String.valueOf(blackcode);
+					
+					g.putchaincode(curx, cury, blackcode);
+					
+					prevcode = blackcode;
+					break;
+				}
+			}
+		}while((curx!=g.startx) || (cury != g.starty));
+		System.out.println("===");
+	}
+	
+	private String getInfos(){
+		String retval = "";
+		for (int i = 0; i < gambars.size(); i++) {
+			retval = retval + gambars.get(i).getInfo();
+		}
+		return retval;
+	}
+	
 	
 }

@@ -106,4 +106,17 @@ public class Gambar {
 			System.out.println("Chaincode["+i+"] :"+chaincodes[i]);
 		}
 	}
+	
+	public String getInfo(){
+		String retval = "";
+		retval = retval + "Informasi Gambar : \n";
+		retval = retval + "Startx  \t\t: "+startx+" Starty : "+starty+"\n";
+		retval = retval + "Width \t\t: "+width + " Height : "+height+"\n";
+		retval = retval + "Chain code \t: " + chaincode +"\n";
+		return retval;
+	}
+	
+	public String getCCode(){
+		return chaincode;
+	}
 }

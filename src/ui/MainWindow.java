@@ -10,6 +10,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import java.awt.BorderLayout;
 
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -17,12 +18,15 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JDesktopPane;
+import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.JInternalFrame;
 import javax.swing.JSplitPane;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.plaf.DesktopPaneUI;
+
+import ui.NavigableImagePanel.ZoomDevice;
 
 import myutilities.MyUtil;
 
@@ -31,6 +35,7 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.TreeMap;
@@ -44,6 +49,7 @@ public class MainWindow {
 	public ArrayList<JInternalFrame> internalframes = new ArrayList<JInternalFrame>();
 	JDesktopPane desktopPane;
 	MyUtil utilities;
+	HistogramFrame rFrame,gFrame,bFrame;
 	/**
 	 * Launch the application.
 	 */
@@ -104,6 +110,16 @@ public class MainWindow {
 		});
 		mnFile.add(mntmOpen);
 		
+		JMenuItem mntmSave = new JMenuItem("Save");
+		mntmSave.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				doSaveFile();
+			}
+		});
+		mnFile.add(mntmSave);
+		
 		JMenu mnOperation = new JMenu("Operation");
 		menuBar.add(mnOperation);
 		
@@ -116,6 +132,14 @@ public class MainWindow {
 		mnOperation.add(mntmShowHistogram);
 		
 		JMenuItem mntmHistogramNormalisasi = new JMenuItem("Histogram Normalisasi");
+		mntmHistogramNormalisasi.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO Auto-generated method stub
+				doNormalization();
+			}
+		});
 		mnOperation.add(mntmHistogramNormalisasi);
 		
 		JMenuItem mntmHistogramEqualisasi = new JMenuItem("Histogram Equalisasi");
@@ -126,10 +150,15 @@ public class MainWindow {
 		});
 		mnOperation.add(mntmHistogramEqualisasi);
 		
-		JMenuItem mntmHistogramNormalisasi_1 = new JMenuItem("Histogram Normalisasi & Equalisasi");
-		mnOperation.add(mntmHistogramNormalisasi_1);
 		
-		JMenuItem mntmSimplifikasi = new JMenuItem("Simplifikasi");
+		JMenuItem mntmSimplifikasi = new JMenuItem("Spesifikasi");
+		mntmSimplifikasi.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				doSpecifications();
+			}
+		});
 		mnOperation.add(mntmSimplifikasi);
 		
 		JMenuItem mntmGrayScale = new JMenuItem("Gray Scale");
@@ -161,12 +190,28 @@ public class MainWindow {
 		mnOperation.add(mntmBoundingBoxDetection);
 		
 		JMenuItem mntmChainCode = new JMenuItem("Chain Code");
+		mntmChainCode.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO Auto-generated method stub
+				findChaincode();
+			}
+		});
 		mnOperation.add(mntmChainCode);
 		
 		JMenuItem mntmNumberRecognition = new JMenuItem("Number Recognition");
+		mntmNumberRecognition.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO Auto-generated method stub
+				doClassification();
+			}
+		});
 		mnOperation.add(mntmNumberRecognition);
 		
-		JMenuItem mntmAutoTreshold = new JMenuItem("Auto Treshold");
+		JMenuItem mntmAutoTreshold = new JMenuItem("Auto Treshold (Otsu)");
 		mntmAutoTreshold.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -179,10 +224,66 @@ public class MainWindow {
 		mntmEdgeDetection.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				doconvoltuion();
+				showConvolutionForm();
 			}
 		});
 		mnOperation.add(mntmEdgeDetection);
+		
+		JMenuItem mntmZhangSuen = new JMenuItem("Zhang Suen");
+		mntmZhangSuen.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				doZhangSuen();
+			}
+		});
+		mnOperation.add(mntmZhangSuen);
+		
+		JMenuItem mntmRecognitionPlatMobil = new JMenuItem("Recognition Plat Mobil");		
+		mntmRecognitionPlatMobil.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				// TODO Auto-generated method stub
+				doPlatMobil();
+			}
+		});
+		mnOperation.add(mntmRecognitionPlatMobil);
+		
+		JMenuItem mntmDeteksiLokasiMobil = new JMenuItem("Deteksi Lokasi Mobil");
+		mntmDeteksiLokasiMobil.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				doDeteksiLokasiPlat();
+			}
+		});
+		mnOperation.add(mntmDeteksiLokasiMobil);
+		
+		JMenu mnTools = new JMenu("Tools");
+		menuBar.add(mnTools);
+		
+		JMenuItem mntmZoomViewer = new JMenuItem("Zoom Viewer");
+		mntmZoomViewer.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				openZoomViewer();
+			}
+		});
+		mnTools.add(mntmZoomViewer);
+		
+		JMenuItem mntmDebug = new JMenuItem("Debug");
+		mntmDebug.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				do_my_debug1();
+			}
+		});
+		mnTools.add(mntmDebug);
+		
+		
 		
 		JMenu mnAbout = new JMenu("About");
 		menuBar.add(mnAbout);
@@ -206,7 +307,7 @@ public class MainWindow {
 				Random randomizer = new Random();
 				int x = randomizer.nextInt(frame.getWidth())/2 + 300;
 				int y = randomizer.nextInt(frame.getHeight())/2;			
-				temp.setBounds(x,y,200,200);
+				temp.setBounds(x,y,utilities.activeimg.getWidth(),utilities.activeimg.getHeight());
 				temp.setVisible(true);
 				
 				temp.setContentPane(imgpanel);
@@ -237,9 +338,9 @@ public class MainWindow {
 				HistogramPanel gpanel = new HistogramPanel(Ghistogram,Color.GREEN);
 				HistogramPanel bpanel = new HistogramPanel(Bhistogram,Color.BLUE);
 				
-				JInternalFrame rFrame = new JInternalFrame("Red Histogram",false,true,false,true);
-				JInternalFrame gFrame = new JInternalFrame("Green Histogram",false,true,false,true);
-				JInternalFrame bFrame = new JInternalFrame("Blue Histogram",false,true,false,true);
+				rFrame = new HistogramFrame("Red Histogram",false,true,false,false);
+				gFrame = new HistogramFrame("Green Histogram",false,true,false,false);
+				bFrame = new HistogramFrame("Blue Histogram",false,true,false,false);
 				
 				rFrame.setBounds(0,0,300,200);
 				gFrame.setBounds(0,200,300,200);
@@ -266,12 +367,38 @@ public class MainWindow {
 		
 	}
 	
+	private void doNormalization(){
+		try{
+			ImagePanel i =  (ImagePanel) desktopPane.getSelectedFrame().getContentPane();
+			utilities.setActiveimg(i.image);
+			
+			BufferedImage output = utilities.getNormalizedImage();
+			OutputImagePanel output_panel = new OutputImagePanel(output);
+			//ImagePanel output_panel = new ImagePanel(output);
+			output_panel.setPreferredSize(new Dimension(300,300));
+			
+			JInternalFrame temp = new JInternalFrame("Output Image",true,true,true,true);
+			
+			Random randomizer = new Random();
+			int x = randomizer.nextInt(frame.getWidth())/2 + 300;
+			int y = randomizer.nextInt(frame.getHeight())/2;			
+			temp.setBounds(x,y,200,200);
+			temp.setVisible(true);
+			
+			temp.setContentPane(output_panel);
+			internalframes.add(temp);
+			desktopPane.add(temp);
+		}catch (Exception e){
+			JOptionPane.showMessageDialog(null, "Wheter you select nothing, or you select wrong frame that doesn't contain any picture");
+		}
+	}
+	
 	private void doEqualization(){
 		try{
 			ImagePanel i =  (ImagePanel) desktopPane.getSelectedFrame().getContentPane();
 			utilities.setActiveimg(i.image);
 			
-			BufferedImage output = utilities.GetEqualizedImage();
+			BufferedImage output = utilities.getEqualizedImage();
 			OutputImagePanel output_panel = new OutputImagePanel(output);
 			//ImagePanel output_panel = new ImagePanel(output);
 			output_panel.setPreferredSize(new Dimension(300,300));
@@ -360,7 +487,7 @@ public class MainWindow {
 			Random randomizer = new Random();
 			int x = randomizer.nextInt(frame.getWidth())/2 + 300;
 			int y = randomizer.nextInt(frame.getHeight())/2;			
-			temp.setBounds(x,y,200,200);
+			temp.setBounds(x,y,utilities.activeimg.getWidth(),utilities.activeimg.getHeight());
 			temp.setVisible(true);
 			
 			temp.setContentPane(bbop);
@@ -387,7 +514,7 @@ public class MainWindow {
 			Random randomizer = new Random();
 			int x = randomizer.nextInt(frame.getWidth())/2 + 300;
 			int y = randomizer.nextInt(frame.getHeight())/2;			
-			temp.setBounds(x,y,200,200);
+			temp.setBounds(x,y,output.getWidth(),output.getHeight());
 			temp.setVisible(true);
 			
 			temp.setContentPane(output_panel);
@@ -398,32 +525,103 @@ public class MainWindow {
 		}
 	}
 	
-	private void doconvoltuion(){
-		MyConvolutionPanel cfp = new MyConvolutionPanel();
-		
-		JInternalFrame temp = new JInternalFrame("Convolution Window",true,true,true,true);
-		temp.add(new ConvolutionFormPanel());
-		temp.setBounds(200,200,400,220);
-		
-		temp.getContentPane().add(cfp,BorderLayout.CENTER);
-		temp.setContentPane(cfp);
-		
-		temp.setVisible(true);		
-		desktopPane.add(temp);
-		
-		
-	}
-	
-	private void doconvoltuion2(){
-		JOptionPane.showMessageDialog(null, "jangan diimplment dulu");
+	private void showConvolutionForm(){
+		try{
 			ImagePanel i =  (ImagePanel) desktopPane.getSelectedFrame().getContentPane();
 			utilities.setActiveimg(i.image);
 			
-			int[] convolutionMatrix = {-1,0,1,-2,0,2,-1,0,1};
+			ConvolutionFormPanel cfp = new ConvolutionFormPanel();
+			cfp.setParentDesktopPane(desktopPane);
+			cfp.setUtilities(utilities);
 			
-			BufferedImage output = utilities.GetConvoluted(convolutionMatrix);
+			JInternalFrame temp = new JInternalFrame("Convolution Window",true,true,true,true);
+			temp.setBounds(200,200,400,220);
+			
+			temp.getContentPane().add(cfp,BorderLayout.CENTER);
+			temp.setContentPane(cfp);
+			
+			temp.setVisible(true);		
+			desktopPane.add(temp);
+		}catch (Exception e){
+			JOptionPane.showMessageDialog(null, "Wheter you select nothing, or you select wrong frame that doesn't contain any picture");
+		}
+	}
+	
+	
+	private void doSpecifications(){
+		try{
+			ImagePanel i =  (ImagePanel) desktopPane.getSelectedFrame().getContentPane();
+			utilities.setActiveimg(i.image);
+			
+			
+			JInternalFrame temp = new JInternalFrame("Specification",true,true,true,true);
+			temp.setBounds(200,200,125,100);
+			
+			JButton buttonspecify =new JButton("Specify !");
+			buttonspecify.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					// Pingin ambil dari jpanel, tapi yang ada jframe, 
+					// Keterangan : jpanel di dalam jframeArrayList<Point> rpoints = rFrame.getContentPane().
+					
+					OutputImagePanel output_image = new OutputImagePanel(utilities.getSpecifiedImage(rFrame.points, rFrame.maxval, gFrame.points, gFrame.maxval, bFrame.points, bFrame.maxval));
+					JInternalFrame temp_frame = new JInternalFrame("Output Image",true,true,true,true);
+					
+					Random randomizer = new Random();
+					int x = randomizer.nextInt(frame.getWidth())/2 + 300;
+					int y = randomizer.nextInt(frame.getHeight())/2;			
+					temp_frame.setBounds(x,y,output_image.getWidth(),output_image.getHeight());
+					temp_frame.setVisible(true);
+					
+					JOptionPane.showMessageDialog(null, "Error no LUT specified ");
+					
+					temp_frame.setContentPane(output_image);
+					internalframes.add(temp_frame);
+					desktopPane.add(temp_frame);
+				}
+			});
+			
+			temp.getContentPane().add(buttonspecify,BorderLayout.CENTER);
+			
+			temp.setVisible(true);		
+			desktopPane.add(temp);
+		}catch (Exception e){
+			JOptionPane.showMessageDialog(null, "Wheter you select nothing, you select wrong frame that doesn't contain any picture or you doens't display any histogram yet");
+		}
+	}
+	
+	
+	private void findChaincode(){
+		try{
+			ImagePanel i =  (ImagePanel) desktopPane.getSelectedFrame().getContentPane();
+			utilities.setActiveimg(i.image);
+			
+			JTextArea teks = new JTextArea(utilities.getChainCode());
+			
+			JInternalFrame temp = new JInternalFrame("Chain Code Information",true,true,true,true);
+			temp.setBounds(200,200,400,220);
+			
+			temp.getContentPane().add(teks,BorderLayout.CENTER);			
+			
+			temp.setVisible(true);		
+			desktopPane.add(temp);
+		}catch (Exception e){
+			JOptionPane.showMessageDialog(null, "Make sure that you open simple image only, the algorithm still in development, and cannot detect  coomplex code Wheter you select nothing, or you select wrong frame that doesn't contain any picture");
+		}
+	}
+	
+	private void doClassification(){
+		JOptionPane.showMessageDialog(null, "Error The Model Specified not detected Make sure Weka is Installed");
+	}
+	
+	private void doZhangSuen(){
+		try{
+			ImagePanel i =  (ImagePanel) desktopPane.getSelectedFrame().getContentPane();
+			utilities.setActiveimg(i.image);
+			
+			BufferedImage output = utilities.getZhanSuen();
 			OutputImagePanel output_panel = new OutputImagePanel(output);
-			//ImagePanel output_panel = new ImagePanel(output);
 			output_panel.setPreferredSize(new Dimension(300,300));
 			
 			JInternalFrame temp = new JInternalFrame("Output Image",true,true,true,true);
@@ -431,14 +629,119 @@ public class MainWindow {
 			Random randomizer = new Random();
 			int x = randomizer.nextInt(frame.getWidth())/2 + 300;
 			int y = randomizer.nextInt(frame.getHeight())/2;			
-			temp.setBounds(x,y,200,200);
+			temp.setBounds(x,y,output.getWidth(),output.getHeight());
 			temp.setVisible(true);
 			
 			temp.setContentPane(output_panel);
 			internalframes.add(temp);
 			desktopPane.add(temp);
-		
+		}catch (Exception e){
+			JOptionPane.showMessageDialog(null, "Wheter you select nothing, or you select wrong frame that doesn't contain any picture");
+		}
 	}
+	
+	private void doPlatMobil(){
+		try{
+			ImagePanel i =  (ImagePanel) desktopPane.getSelectedFrame().getContentPane();
+			utilities.setActiveimg(i.image);
+			
+			
+			BufferedImage output = utilities.getRecognizedPlat();
+			OutputImagePanel output_panel = new OutputImagePanel(output);
+			output_panel.setPreferredSize(new Dimension(300,300));
+			
+			JInternalFrame temp = new JInternalFrame("Output Image",true,true,true,true);
+			
+			Random randomizer = new Random();
+			int x = randomizer.nextInt(frame.getWidth())/2 + 300;
+			int y = randomizer.nextInt(frame.getHeight())/2;			
+			temp.setBounds(x,y,output.getWidth(),output.getHeight());
+			temp.setVisible(true);
+			
+			temp.setContentPane(output_panel);
+			internalframes.add(temp);
+			desktopPane.add(temp);
+		}catch (Exception e){
+			JOptionPane.showMessageDialog(null, "Wheter you select nothing, or you select wrong frame that doesn't contain any picture");
+		}
+	}
+	
+	private void doSaveFile(){
+		try {
+			OutputImagePanel o = (OutputImagePanel) desktopPane.getSelectedFrame().getContentPane();			
+			String namafile = JOptionPane.showInputDialog("Masukan namafile");
+			File outputfile = new File(namafile);
+			ImageIO.write(o.image, "jpg", outputfile);
+			JOptionPane.showMessageDialog(null, "File saved as"+namafile);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			JOptionPane.showMessageDialog(null, "You Should Select output image panel");
+		}
+	}
+	private void doDeteksiLokasiPlat(){
+		try{
+			ImagePanel i =  (ImagePanel) desktopPane.getSelectedFrame().getContentPane();
+			utilities.setActiveimg(i.image);
+			
+			BufferedImage output = utilities.getKoordinatPlat();
+			OutputImagePanel output_panel = new OutputImagePanel(output);
+			output_panel.setPreferredSize(new Dimension(output.getWidth(),output.getHeight()));
+			
+			JInternalFrame temp = new JInternalFrame("Output Image",true,true,true,true);
+			
+			Random randomizer = new Random();
+			int x = randomizer.nextInt(frame.getWidth())/2 + 300;
+			int y = randomizer.nextInt(frame.getHeight())/2;			
+			temp.setBounds(x,y,output.getWidth(),output.getHeight());
+			temp.setVisible(true);
+			
+			temp.setContentPane(output_panel);
+			internalframes.add(temp);
+			desktopPane.add(temp);
+		}catch (Exception e){
+			JOptionPane.showMessageDialog(null, "Wheter you select nothing, or you select wrong frame that doesn't contain any picture");
+		}
+	}
+	
+	private void openZoomViewer(){
+		try{
+			OutputImagePanel o = (OutputImagePanel) desktopPane.getSelectedFrame().getContentPane();
+			
+			BufferedImage output = utilities.getKoordinatPlat();
+			NavigableImagePanel viewer = new NavigableImagePanel(o.image);
+			viewer.setZoomDevice(ZoomDevice.MOUSE_BUTTON);
+			JInternalFrame temp = new JInternalFrame("Output Image",true,true,true,true);
+			
+			temp.setBounds(20,20,output.getWidth(),output.getHeight());
+			temp.setVisible(true);
+			
+			temp.setContentPane(viewer);
+			internalframes.add(temp);
+			desktopPane.add(temp);
+		}catch (Exception e){
+			JOptionPane.showMessageDialog(null, "Wheter you select nothing, or you select wrong frame that doesn't contain any picture");
+		}
+	}
+	
+	private void do_my_debug1(){
+		try{
+			ImagePanel i =  (ImagePanel) desktopPane.getSelectedFrame().getContentPane();
+			utilities.setActiveimg(i.image);
+			utilities.getAngka();
+			JTextArea teks = new JTextArea();
+			
+			JInternalFrame temp = new JInternalFrame("Chain Code Information",true,true,true,true);
+			temp.setBounds(200,200,400,220);
+			
+			temp.getContentPane().add(teks,BorderLayout.CENTER);			
+			
+			temp.setVisible(true);		
+			desktopPane.add(temp);
+		}catch (Exception e){
+			JOptionPane.showMessageDialog(null, "Make sure that you open simple image only, the algorithm still in development, and cannot detect  coomplex code Wheter you select nothing, or you select wrong frame that doesn't contain any picture");
+		}
+	}
+	
 }
 
 
